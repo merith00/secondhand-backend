@@ -109,3 +109,26 @@ UPDATE customers
         id
     ]);
 };
+
+
+export const getCreditsOverview = async () => {
+  const [rows] = await pool.query(`
+    SELECT
+      c.id,
+      c.customer_number,
+      c.first_name,
+      c.last_name,
+      COUNT(s.id) AS sold_items_count,
+      COALESCE(SUM(s.owner_amount), 0) AS credit_balance
+    FROM customers c
+    LEFT JOIN sales s ON s.owner_customer_id = c.id
+    GROUP BY
+      c.id,
+      c.customer_number,
+      c.first_name,
+      c.last_name
+    ORDER BY c.last_name ASC, c.first_name ASC
+  `);
+
+  return rows;
+};

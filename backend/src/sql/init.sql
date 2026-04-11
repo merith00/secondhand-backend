@@ -102,3 +102,20 @@ VALUES
     ) ON DUPLICATE KEY
 UPDATE
     title = title;
+
+CREATE TABLE IF NOT EXISTS sales (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    item_id BIGINT NOT NULL UNIQUE,
+    owner_customer_id BIGINT NOT NULL,
+    sale_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sale_price DECIMAL(10, 2) NOT NULL,
+    owner_amount DECIMAL(10, 2) NOT NULL,
+    shop_amount DECIMAL(10, 2) NOT NULL,
+    sale_type ENUM('store', 'online') NOT NULL DEFAULT 'store',
+    payment_method ENUM('cash', 'bank_transfer') NOT NULL DEFAULT 'cash',
+    notes TEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_sales_item FOREIGN KEY (item_id) REFERENCES items(id),
+    CONSTRAINT fk_sales_owner FOREIGN KEY (owner_customer_id) REFERENCES customers(id)
+);

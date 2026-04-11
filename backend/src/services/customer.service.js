@@ -40,3 +40,7 @@ const validateCustomerInput = (data) => {
         throw error;
     }
 };
+
+export const getCustomerCreditsOverview = async () => {
+  return customerRepository.getCreditsOverview();
+};
