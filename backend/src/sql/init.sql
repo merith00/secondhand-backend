@@ -1,0 +1,104 @@
+CREATE DATABASE IF NOT EXISTS secondhand_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE secondhand_app;
+
+CREATE TABLE IF NOT EXISTS customers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    customer_number VARCHAR(20) NOT NULL UNIQUE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    street VARCHAR(150),
+    house_number VARCHAR(20),
+    postal_code VARCHAR(20),
+    city VARCHAR(100),
+    phone VARCHAR(50),
+    email VARCHAR(150),
+    notes TEXT,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    owner_customer_id BIGINT NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    description TEXT,
+    category VARCHAR(100),
+    size VARCHAR(30),
+    brand VARCHAR(100),
+    color VARCHAR(50),
+    price DECIMAL(10, 2) NOT NULL,
+    image_url VARCHAR(255),
+    status ENUM('active', 'reserved', 'sold', 'withdrawn') NOT NULL DEFAULT 'active',
+    is_in_store TINYINT(1) NOT NULL DEFAULT 1,
+    is_online_visible TINYINT(1) NOT NULL DEFAULT 0,
+    sold_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_items_owner FOREIGN KEY (owner_customer_id) REFERENCES customers(id)
+);
+
+INSERT INTO
+    customers (
+        customer_number,
+        first_name,
+        last_name,
+        street,
+        house_number,
+        postal_code,
+        city,
+        phone,
+        email,
+        notes,
+        is_active
+    )
+VALUES
+    (
+        'K00001',
+        'Anna',
+        'Meyer',
+        'Musterstrasse',
+        '1',
+        '49681',
+        'Garrel',
+        '0123456789',
+        'anna@example.com',
+        NULL,
+        1
+    ) ON DUPLICATE KEY
+UPDATE
+    first_name = first_name;
+
+INSERT INTO
+    items (
+        owner_customer_id,
+        title,
+        description,
+        category,
+        size,
+        brand,
+        color,
+        price,
+        image_url,
+        status,
+        is_in_store,
+        is_online_visible
+    )
+VALUES
+    (
+        1,
+        'Zara Bluse blau',
+        'Sehr guter Zustand',
+        'Bluse',
+        'M',
+        'Zara',
+        'Blau',
+        18.00,
+        NULL,
+        'active',
+        1,
+        1
+    ) ON DUPLICATE KEY
+UPDATE
+    title = title;
