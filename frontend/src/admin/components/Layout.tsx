@@ -1,8 +1,9 @@
+import type { ReactNode } from 'react';
 
 type LayoutProps = {
-  activeView: 'customers' | 'items' | 'sales';
-  onChangeView: (view: 'customers' | 'items' | 'sales') => void;
-  children: React.ReactNode;
+  activeView: 'customers' | 'items' | 'sales' | 'orders';
+  onChangeView: (view: 'customers' | 'items' | 'sales' | 'orders') => void;
+  children: ReactNode;
 };
 
 export default function Layout({
@@ -35,6 +36,12 @@ export default function Layout({
         >
           Verkäufe
         </button>
+        <button
+          className={activeView === 'orders' ? 'nav-btn active' : 'nav-btn'}
+          onClick={() => onChangeView('orders')}
+        >
+          Bestellungen
+        </button>
       </aside>
 
       <main className="main-content">
@@ -50,3 +57,4 @@ export default function Layout({
     </div>
   );
 }
+

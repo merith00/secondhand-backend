@@ -119,3 +119,33 @@ CREATE TABLE IF NOT EXISTS sales (
     CONSTRAINT fk_sales_item FOREIGN KEY (item_id) REFERENCES items(id),
     CONSTRAINT fk_sales_owner FOREIGN KEY (owner_customer_id) REFERENCES customers(id)
 );
+
+CREATE TABLE IF NOT EXISTS shop_orders (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  order_number VARCHAR(30) NOT NULL UNIQUE,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL,
+  phone VARCHAR(50),
+  street VARCHAR(150) NOT NULL,
+  house_number VARCHAR(20),
+  postal_code VARCHAR(20) NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  payment_method ENUM('bank_transfer') NOT NULL DEFAULT 'bank_transfer',
+  order_status ENUM('open', 'reserved', 'paid', 'shipped', 'completed', 'cancelled') NOT NULL DEFAULT 'open',
+  total_amount DECIMAL(10,2) NOT NULL,
+  notes TEXT,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS shop_order_items (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  order_id BIGINT NOT NULL,
+  item_id BIGINT NOT NULL UNIQUE,
+  item_title VARCHAR(150) NOT NULL,
+  item_price DECIMAL(10,2) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_shop_order_items_order FOREIGN KEY (order_id) REFERENCES shop_orders(id),
+  CONSTRAINT fk_shop_order_items_item FOREIGN KEY (item_id) REFERENCES items(id)
+);

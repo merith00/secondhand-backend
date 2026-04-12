@@ -95,3 +95,11 @@ export async function fetchCustomerCredits() {
   const response = await fetch(`${API_BASE_URL}/customers/credits/overview`);
   return handleResponse(response);
 }
+
+
+/* ... deine bisherigen Admin-Funktionen ... */
+
+export async function fetchShopOrders() {
+  const response = await fetch(`${API_BASE_URL}/shop/orders`);
+  return handleResponse(response);
+}

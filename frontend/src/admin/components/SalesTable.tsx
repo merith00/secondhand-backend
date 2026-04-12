@@ -1,4 +1,4 @@
-import type { Sale } from '../types';
+import type { Sale } from '../../types';
 
 type SalesTableProps = {
   sales: Sale[];

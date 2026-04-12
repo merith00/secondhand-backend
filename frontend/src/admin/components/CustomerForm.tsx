@@ -1,4 +1,4 @@
-import type { CustomerFormData } from '../types';
+import type { CustomerFormData } from '../../types';
 
 type CustomerFormProps = {
   formData: CustomerFormData;

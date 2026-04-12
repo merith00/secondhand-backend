@@ -1,4 +1,4 @@
-import type { Item, SaleFormData } from '../types';
+import type { Item, SaleFormData } from '../../types';
 
 type SaleFormProps = {
   formData: SaleFormData;

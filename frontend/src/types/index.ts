@@ -90,3 +90,88 @@ export type CustomerCredit = {
   sold_items_count: number;
   credit_balance: number;
 };
+
+export type ShopItem = {
+  id: number;
+  title: string;
+  description?: string;
+  category?: string;
+  size?: string;
+  brand?: string;
+  color?: string;
+  price: number;
+  image_url?: string;
+  status: string;
+  is_in_store: number;
+  is_online_visible: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type CartItem = ShopItem;
+
+export type CheckoutFormData = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  street: string;
+  house_number: string;
+  postal_code: string;
+  city: string;
+  notes: string;
+};
+
+export type ShopOrder = {
+  id: number;
+  order_number: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  street: string;
+  house_number?: string;
+  postal_code: string;
+  city: string;
+  payment_method: 'bank_transfer';
+  order_status: 'open' | 'reserved' | 'paid' | 'shipped' | 'completed' | 'cancelled';
+  total_amount: number;
+  notes?: string;
+  items: {
+    id: number;
+    order_id: number;
+    item_id: number;
+    item_title: string;
+    item_price: number;
+    created_at: string;
+  }[];
+};
+
+export type AdminShopOrderItem = {
+  id: number;
+  order_id: number;
+  item_id: number;
+  item_title: string;
+  item_price: number;
+  created_at: string;
+};
+
+export type AdminShopOrder = {
+  id: number;
+  order_number: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  street: string;
+  house_number?: string;
+  postal_code: string;
+  city: string;
+  payment_method: 'bank_transfer';
+  order_status: 'open' | 'reserved' | 'paid' | 'shipped' | 'completed' | 'cancelled';
+  total_amount: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  items: AdminShopOrderItem[];
+};
