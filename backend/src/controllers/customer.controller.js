@@ -1,6 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import * as customerService from '../services/customer.service.js';
 
+
 export const getCustomers = asyncHandler(async (req, res) => {
   const customers = await customerService.getAllCustomers();
   res.json(customers);
