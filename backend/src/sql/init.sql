@@ -39,69 +39,6 @@ CREATE TABLE IF NOT EXISTS items (
     CONSTRAINT fk_items_owner FOREIGN KEY (owner_customer_id) REFERENCES customers(id)
 );
 
-INSERT INTO
-    customers (
-        customer_number,
-        first_name,
-        last_name,
-        street,
-        house_number,
-        postal_code,
-        city,
-        phone,
-        email,
-        notes,
-        is_active
-    )
-VALUES
-    (
-        'K00001',
-        'Anna',
-        'Meyer',
-        'Musterstrasse',
-        '1',
-        '49681',
-        'Garrel',
-        '0123456789',
-        'anna@example.com',
-        NULL,
-        1
-    ) ON DUPLICATE KEY
-UPDATE
-    first_name = first_name;
-
-INSERT INTO
-    items (
-        owner_customer_id,
-        title,
-        description,
-        category,
-        size,
-        brand,
-        color,
-        price,
-        image_url,
-        status,
-        is_in_store,
-        is_online_visible
-    )
-VALUES
-    (
-        1,
-        'Zara Bluse blau',
-        'Sehr guter Zustand',
-        'Bluse',
-        'M',
-        'Zara',
-        'Blau',
-        18.00,
-        NULL,
-        'active',
-        1,
-        1
-    ) ON DUPLICATE KEY
-UPDATE
-    title = title;
 
 CREATE TABLE IF NOT EXISTS sales (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -149,3 +86,6 @@ CREATE TABLE IF NOT EXISTS shop_order_items (
   CONSTRAINT fk_shop_order_items_order FOREIGN KEY (order_id) REFERENCES shop_orders(id),
   CONSTRAINT fk_shop_order_items_item FOREIGN KEY (item_id) REFERENCES items(id)
 );
+
+
+ALTER TABLE items ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) NULL;

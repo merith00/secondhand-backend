@@ -34,6 +34,7 @@ const [rows] = await pool.query(`
  i.sold_at,
  i.created_at,
  i.updated_at,
+ i.image_url,
  c.customer_number,
  c.first_name,
  c.last_name
@@ -63,6 +64,7 @@ const [rows] = await pool.query(`
  i.sold_at,
  i.created_at,
  i.updated_at,
+ i.image_url,
  c.customer_number,
  c.first_name,
  c.last_name

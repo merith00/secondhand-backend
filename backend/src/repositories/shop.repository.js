@@ -41,7 +41,8 @@ export const findVisibleItems = async (query = {}) => {
       i.is_in_store,
       i.is_online_visible,
       i.created_at,
-      i.updated_at
+      i.updated_at,
+      i.image_url
     FROM items i
     ${whereClause}
     ORDER BY i.created_at DESC
@@ -66,7 +67,8 @@ export const findVisibleItemById = async (id) => {
       i.is_in_store,
       i.is_online_visible,
       i.created_at,
-      i.updated_at
+      i.updated_at,
+      i.image_url
     FROM items i
     WHERE i.id = ?
       AND i.status = 'active'
