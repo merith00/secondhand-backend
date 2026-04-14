@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS secondhand_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS secondhand CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE secondhand_app;
+USE secondhand;
 
 CREATE TABLE IF NOT EXISTS customers (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
