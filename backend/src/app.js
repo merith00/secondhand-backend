@@ -8,14 +8,25 @@ import { errorMiddleware } from './middleware/error.middleware.js';
 const app = express();
 
 const allowedOrigins = (
-  process.env.CORS_ORIGIN?.split(',').map((origin) => origin.trim()) || [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'tauri://localhost'
-  ]
+    process.env.CORS_ORIGIN?.split(',').map((origin) => origin.trim()) || [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'tauri://localhost'
+    ]
 );
 
+
 app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
+app.use((req, res, next) => {
+  console.log('✅ Allowed Origin gesetzt für:', req.headers.origin);
+  next();
+});
+
+/*app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
 
@@ -26,7 +37,7 @@ app.use(cors({
     return callback(new Error(`CORS blockiert Origin: ${origin}`));
   },
   credentials: true
-}));
+}));*/
 
 app.use(morgan('dev'));
 app.use(express.json());
@@ -34,7 +45,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
 app.get('/health', (req, res) => {
-  res.json({ ok: true, message: 'API erreichbar' });
+    res.json({ ok: true, message: 'API erreichbar' });
 });
 
 app.use('/api', routes);
