@@ -47,6 +47,7 @@ export const createSale = async (data) => {
     sale_type: data.sale_type || 'store',
     payment_method: data.payment_method || 'cash',
     notes: data.notes || null,
+    buyer_customer_id: Number(data.buyer_customer_id),
   });
 
   await itemRepository.update(Number(data.item_id), {

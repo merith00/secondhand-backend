@@ -15,6 +15,7 @@ export const findAll = async () => {
       s.notes,
       s.created_at,
       s.updated_at,
+      s.buyer_customer_id,
       i.title,
       i.brand,
       i.category,
@@ -45,6 +46,7 @@ export const findById = async (id) => {
       s.notes,
       s.created_at,
       s.updated_at,
+      s.buyer_customer_id,
       i.title,
       i.brand,
       i.category,
@@ -80,8 +82,9 @@ export const insert = async (data) => {
       shop_amount,
       sale_type,
       payment_method,
-      notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      notes,
+      buyer_customer_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     data.item_id,
     data.owner_customer_id,
@@ -91,6 +94,7 @@ export const insert = async (data) => {
     data.sale_type,
     data.payment_method,
     data.notes || null,
+    data.buyer_customer_id,
   ]);
 
   return result.insertId;

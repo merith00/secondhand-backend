@@ -61,6 +61,25 @@ export async function uploadItemImage(req, res, next) {
       image_url: imageUrl,
     });
   } catch (err) {
+    console.error('Upload Fehler:', err);
+
+    // 👉 Multer spezifische Fehler
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        message: 'Bild ist zu groß (max. 10 MB)',
+      });
+    }
+
+    if (err.message === 'Nur JPG, PNG oder WebP erlaubt') {
+      return res.status(400).json({
+        message: err.message,
+      });
+    }
+
+    res.status(500).json({
+      message: 'Fehler beim Hochladen des Bildes',
+    });
+    
     next(err);
   }
 }

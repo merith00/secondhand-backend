@@ -89,3 +89,9 @@ CREATE TABLE IF NOT EXISTS shop_order_items (
 
 
 ALTER TABLE items ADD COLUMN image_url VARCHAR(500) NULL;
+
+
+ALTER TABLE sales
+ADD COLUMN buyer_customer_id BIGINT NOT NULL,
+ADD CONSTRAINT fk_sales_buyer
+    FOREIGN KEY (buyer_customer_id) REFERENCES customers(id);

@@ -1,6 +1,6 @@
 import { pool } from '../config/db.js';
 export const findAll = async () => {
-    const [rows] = await pool.query(`
+  const [rows] = await pool.query(`
  SELECT
  id,
  customer_number,
@@ -19,10 +19,10 @@ export const findAll = async () => {
  FROM customers
  ORDER BY last_name ASC, first_name ASC
  `);
-    return rows;
+  return rows;
 };
 export const findById = async (id) => {
-    const [rows] = await pool.query(`
+  const [rows] = await pool.query(`
  SELECT
  id,
  customer_number,
@@ -41,10 +41,10 @@ export const findById = async (id) => {
  FROM customers
  WHERE id = ?
  `, [id]);
-    return rows[0] || null;
+  return rows[0] || null;
 };
 export const insert = async (data) => {
-    const [result] = await pool.query(`
+  const [result] = await pool.query(`
  INSERT INTO customers (
  customer_number,
  first_name,
@@ -59,29 +59,29 @@ export const insert = async (data) => {
  is_active
  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
  `, [
-        '',
-        data.first_name,
-        data.last_name,
-        data.street || null,
-        data.house_number || null,
-        data.postal_code || null,
-        data.city || null,
-        data.phone || null,
-        data.email || null,
-        data.notes || null,
-        data.is_active ?? 1
-    ]);
-    return result.insertId;
+    '',
+    data.first_name,
+    data.last_name,
+    data.street || null,
+    data.house_number || null,
+    data.postal_code || null,
+    data.city || null,
+    data.phone || null,
+    data.email || null,
+    data.notes || null,
+    data.is_active ?? 1
+  ]);
+  return result.insertId;
 };
 export const updateCustomerNumber = async (id, customerNumber) => {
-    await pool.query(`
+  await pool.query(`
  UPDATE customers
  SET customer_number = ?
  WHERE id = ?
  `, [customerNumber, id]);
 };
 export const update = async (id, data) => {
-    await pool.query(`
+  await pool.query(`
 UPDATE customers
  SET
  first_name = COALESCE(?, first_name),
@@ -96,38 +96,60 @@ UPDATE customers
  is_active = COALESCE(?, is_active)
  WHERE id = ?
  `, [
-        data.first_name ?? null,
-        data.last_name ?? null,
-        data.street ?? null,
-        data.house_number ?? null,
-        data.postal_code ?? null,
-        data.city ?? null,
-        data.phone ?? null,
-        data.email ?? null,
-        data.notes ?? null,
-        data.is_active ?? null,
-        id
-    ]);
+    data.first_name ?? null,
+    data.last_name ?? null,
+    data.street ?? null,
+    data.house_number ?? null,
+    data.postal_code ?? null,
+    data.city ?? null,
+    data.phone ?? null,
+    data.email ?? null,
+    data.notes ?? null,
+    data.is_active ?? null,
+    id
+  ]);
 };
 
 
 export const getCreditsOverview = async () => {
   const [rows] = await pool.query(`
-    SELECT
-      c.id,
-      c.customer_number,
-      c.first_name,
-      c.last_name,
-      COUNT(s.id) AS sold_items_count,
-      COALESCE(SUM(s.owner_amount), 0) AS credit_balance
-    FROM customers c
-    LEFT JOIN sales s ON s.owner_customer_id = c.id
-    GROUP BY
-      c.id,
-      c.customer_number,
-      c.first_name,
-      c.last_name
-    ORDER BY c.last_name ASC, c.first_name ASC
+SELECT
+  c.id,
+  c.customer_number,
+  c.first_name,
+  c.last_name,
+
+  COALESCE(owner_stats.sold_items_count, 0) AS sold_items_count,
+  COALESCE(owner_stats.total_credit_earned, 0) AS total_credit_earned,
+
+  COALESCE(buyer_stats.bought_items_count, 0) AS bought_items_count,
+  COALESCE(buyer_stats.total_credit_spent, 0) AS total_credit_spent,
+
+  COALESCE(owner_stats.total_credit_earned, 0) - COALESCE(buyer_stats.total_credit_spent, 0) AS credit_balance
+
+FROM customers c
+
+LEFT JOIN (
+  SELECT
+    owner_customer_id,
+    COUNT(*) AS sold_items_count,
+    SUM(owner_amount) AS total_credit_earned
+  FROM sales
+  GROUP BY owner_customer_id
+) owner_stats
+  ON owner_stats.owner_customer_id = c.id
+
+LEFT JOIN (
+  SELECT
+    buyer_customer_id,
+    COUNT(*) AS bought_items_count,
+    SUM(sale_price) AS total_credit_spent
+  FROM sales
+  GROUP BY buyer_customer_id
+) buyer_stats
+  ON buyer_stats.buyer_customer_id = c.id
+
+ORDER BY c.last_name ASC, c.first_name ASC;
   `);
 
   return rows;
