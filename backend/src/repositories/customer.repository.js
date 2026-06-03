@@ -59,7 +59,7 @@ export const insert = async (data) => {
  is_active
  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
  `, [
-    '',
+    data.customer_number || '',
     data.first_name,
     data.last_name,
     data.street || null,

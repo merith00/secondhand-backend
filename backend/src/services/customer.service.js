@@ -13,11 +13,19 @@ export const getCustomerById = async (id) => {
     return customer;
 };
 export const createCustomer = async (data) => {
+    try {
     validateCustomerInput(data);
     const customerId = await customerRepository.insert(data);
-    const customerNumber = createCustomerNumber(customerId);
-    await customerRepository.updateCustomerNumber(customerId, customerNumber);
     return customerRepository.findById(customerId);
+    } catch (error) {  
+        if (error.code === 'ER_DUP_ENTRY') {
+                  const error = new Error(
+        `Kundennummer ${data.customer_number} existiert bereits`
+        );
+        error.statusCode = 409;
+        throw error;
+        }
+    }
 };
 export const updateCustomer = async (id, data) => {
     const existingCustomer = await customerRepository.findById(id);
