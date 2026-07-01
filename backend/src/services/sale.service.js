@@ -35,15 +35,13 @@ export const createSale = async (data) => {
   }
 
   const salePrice = Number(data.sale_price);
-  const ownerAmount = Number((salePrice * 0.5).toFixed(2));
-  const shopAmount = Number((salePrice - ownerAmount).toFixed(2));
 
   const saleId = await saleRepository.insert({
     item_id: Number(data.item_id),
     owner_customer_id: Number(item.owner_customer_id),
     sale_price: salePrice,
-    owner_amount: ownerAmount,
-    shop_amount: shopAmount,
+    owner_amount: data.owner_amount,
+    shop_amount: data.shop_amount,
     sale_type: data.sale_type || 'store',
     payment_method: data.payment_method || 'cash',
     notes: data.notes || null,
