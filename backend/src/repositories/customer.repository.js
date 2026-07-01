@@ -114,40 +114,67 @@ UPDATE customers
 export const getCreditsOverview = async () => {
   const [rows] = await pool.query(`
 SELECT
-  c.id,
-  c.customer_number,
-  c.first_name,
-  c.last_name,
+    c.id,
+    c.customer_number,
+    c.first_name,
+    c.last_name,
 
-  COALESCE(owner_stats.sold_items_count, 0) AS sold_items_count,
-  COALESCE(owner_stats.total_credit_earned, 0) AS total_credit_earned,
+    COALESCE(owner_stats.sold_items_count, 0) AS sold_items_count,
+    COALESCE(owner_stats.total_credit_earned, 0) AS total_credit_earned,
 
-  COALESCE(buyer_stats.bought_items_count, 0) AS bought_items_count,
-  COALESCE(buyer_stats.total_credit_spent, 0) AS total_credit_spent,
+    COALESCE(buyer_stats.bought_items_count, 0) AS bought_items_count,
+    COALESCE(buyer_stats.total_credit_spent, 0) AS total_credit_spent,
 
-  COALESCE(owner_stats.total_credit_earned, 0) - COALESCE(buyer_stats.total_credit_spent, 0) AS credit_balance
+    COALESCE(item_stats.available_items_count, 0) AS available_items_count,
+    COALESCE(total_item_stats.total_items_count, 0) AS total_items_count,
+
+    COALESCE(owner_stats.total_credit_earned, 0)
+      - COALESCE(buyer_stats.total_credit_spent, 0) AS credit_balance
 
 FROM customers c
 
 LEFT JOIN (
-  SELECT
-    owner_customer_id,
-    COUNT(*) AS sold_items_count,
-    SUM(owner_amount) AS total_credit_earned
-  FROM sales
-  GROUP BY owner_customer_id
+    SELECT
+        owner_customer_id,
+        COUNT(*) AS sold_items_count,
+        SUM(owner_amount) AS total_credit_earned
+    FROM sales
+    GROUP BY owner_customer_id
 ) owner_stats
-  ON owner_stats.owner_customer_id = c.id
+    ON owner_stats.owner_customer_id = c.id
 
 LEFT JOIN (
-  SELECT
-    buyer_customer_id,
-    COUNT(*) AS bought_items_count,
-    SUM(sale_price) AS total_credit_spent
-  FROM sales
-  GROUP BY buyer_customer_id
+    SELECT
+        buyer_customer_id,
+        COUNT(*) AS bought_items_count,
+        SUM(sale_price) AS total_credit_spent
+    FROM sales
+    GROUP BY buyer_customer_id
 ) buyer_stats
-  ON buyer_stats.buyer_customer_id = c.id
+    ON buyer_stats.buyer_customer_id = c.id
+
+LEFT JOIN (
+    SELECT
+        i.owner_customer_id,
+        COUNT(*) AS available_items_count
+    FROM items i
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM sales s
+        WHERE s.item_id = i.id
+    )
+    GROUP BY i.owner_customer_id
+) item_stats
+    ON item_stats.owner_customer_id = c.id
+
+LEFT JOIN (
+    SELECT
+        owner_customer_id,
+        COUNT(*) AS total_items_count
+    FROM items
+    GROUP BY owner_customer_id
+) total_item_stats
+    ON total_item_stats.owner_customer_id = c.id
 
 ORDER BY c.last_name ASC, c.first_name ASC;
   `);

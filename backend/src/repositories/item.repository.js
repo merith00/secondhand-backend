@@ -14,37 +14,48 @@ if (query.is_online_visible != null) {
 conditions.push('i.is_online_visible = ?');
 params.push(Number(query.is_online_visible));
 }
-const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}
-` : '';
+const whereClause = conditions.length
+  ? `WHERE ${conditions.join(' AND ')}`
+  : '';
+
 const [rows] = await pool.query(`
- SELECT
- i.id,
- i.owner_customer_id,
- i.title,
- i.description,
- i.category,
- i.size,
- i.brand,
- i.color,
- i.price,
- i.image_url,
- i.status,
- i.is_in_store,
- i.is_online_visible,
- i.sold_at,
- i.created_at,
- i.updated_at,
- i.image_url,
- c.customer_number,
- c.first_name,
- c.last_name
- FROM items i
- INNER JOIN customers c ON c.id = i.owner_customer_id
+SELECT
+    i.id,
+    i.owner_customer_id,
+    i.title,
+    i.description,
+    i.category,
+    i.size,
+    i.brand,
+    i.color,
+    i.price AS start_price,
+    s.sale_price AS verkaufspreis,
+    s.owner_amount AS verkauferAnteil,
+    s.shop_amount AS shopAnteil,
+    i.image_url,
+    i.status,
+    i.is_in_store,
+    i.is_online_visible,
+    i.sold_at,
+    i.created_at,
+    i.updated_at,
+    c.customer_number,
+    c.first_name,
+    c.last_name
+FROM items i
+INNER JOIN customers c
+    ON c.id = i.owner_customer_id
+LEFT JOIN sales s
+    ON s.item_id = i.id
 ${whereClause}
- ORDER BY i.created_at DESC
- `, params);
+ORDER BY i.created_at DESC
+`, params);
+
 return rows;
 };
+
+
+
 export const findById = async (id) => {
 const [rows] = await pool.query(`
  SELECT
@@ -56,7 +67,7 @@ const [rows] = await pool.query(`
  i.size,
  i.brand,
  i.color,
- i.price,
+ i.price AS start_price,
  i.image_url,
  i.status,
  i.is_in_store,
