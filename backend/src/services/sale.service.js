@@ -1,5 +1,6 @@
 import * as saleRepository from '../repositories/sale.repository.js';
 import * as itemRepository from '../repositories/item.repository.js';
+import { updateCustomerStatus } from '../utils/customerStatus.js';
 
 export const getAllSales = async () => {
   return saleRepository.findAll();
@@ -54,6 +55,9 @@ export const createSale = async (data) => {
     is_online_visible: 0,
     sold_at: new Date(),
   });
+
+  await updateCustomerStatus(Number(item.owner_customer_id));
+  await updateCustomerStatus(Number(data.buyer_customer_id));
 
   return saleRepository.findById(saleId);
 };

@@ -1,5 +1,6 @@
 import * as itemRepository from '../repositories/item.repository.js';
 import * as customerRepository from '../repositories/customer.repository.js';
+import { updateCustomerStatus } from '../utils/customerStatus.js';
 const ALLOWED_STATUSES = ['active', 'reserved', 'sold', 'withdrawn'];
 export const getAllItems = async (query) => {
     return itemRepository.findAll(query);
@@ -28,6 +29,9 @@ export const createItem = async (data) => {
         is_online_visible: Number(data.is_online_visible || 0),
         status: 'active'
     });
+
+    await updateCustomerStatus(Number(data.owner_customer_id));
+
     return itemRepository.findById(itemId);
 };
 export const updateItem = async (id, data) => {
@@ -47,6 +51,13 @@ export const updateItem = async (id, data) => {
         }
     }
     await itemRepository.update(id, data);
+    await updateCustomerStatus(
+        Number(data.owner_customer_id ?? existingItem.owner_customer_id)
+    ); 
+
+    await updateCustomerStatus(Number(data.buyer_customer_id));
+
+    
     return itemRepository.findById(id);
 };
 export const updateItemStatus = async (id, status) => {
