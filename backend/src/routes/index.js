@@ -4,6 +4,7 @@ import itemRoutes from './item.routes.js';
 import saleRoutes from './sale.routes.js';
 import shopRoutes from './shop.routes.js';
 import shopOrderRoutes from './shopOrder.routes.js';
+import itemOptionRoutes from './itemOption.routes.js';
 
 const router = Router();
 
@@ -12,5 +13,6 @@ router.use('/items', itemRoutes);
 router.use('/sales', saleRoutes);
 router.use('/shop', shopRoutes);
 router.use('/shop/orders', shopOrderRoutes);
+router.use('/item-options', itemOptionRoutes);
 
 export default router;
