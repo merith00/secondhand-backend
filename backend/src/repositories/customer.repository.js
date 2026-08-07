@@ -69,7 +69,7 @@ export const insert = async (data) => {
     data.phone || null,
     data.email || null,
     data.notes || null,
-    data.is_active ?? 1
+    data.is_active ?? 0
   ]);
   return result.insertId;
 };
