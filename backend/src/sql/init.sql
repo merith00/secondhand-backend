@@ -193,3 +193,20 @@ INSERT IGNORE INTO item_options (type, value) VALUES
 ('color', 'Gold'),
 ('color', 'Bunt'),
 ('color', 'Sonstiges');
+
+
+
+ALTER TABLE sales
+ADD COLUMN IF NOT EXISTS transaction_id VARCHAR(36) NULL AFTER id;
+
+CREATE INDEX idx_sales_transaction_id
+ON sales (transaction_id);
+
+
+ALTER TABLE sales
+ADD COLUMN buyer_credit_used DECIMAL(10, 2) NULL
+AFTER buyer_customer_id,
+ADD COLUMN buyer_cash_paid DECIMAL(10, 2) NOT NULL DEFAULT 0
+AFTER buyer_credit_used,
+ADD COLUMN cash_difference_confirmed TINYINT(1) NOT NULL DEFAULT 0
+AFTER buyer_cash_paid;

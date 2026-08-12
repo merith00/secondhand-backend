@@ -157,3 +157,52 @@ data.sold_at ?? null,
 id
 ]);
 };
+
+export const findByIdForUpdate = async (connection, id) => {
+  const [rows] = await connection.query(
+    `
+      SELECT
+        i.id,
+        i.owner_customer_id,
+        i.title,
+        i.description,
+        i.category,
+        i.size,
+        i.brand,
+        i.color,
+        i.price AS start_price,
+        i.status,
+        i.is_in_store,
+        i.is_online_visible,
+        i.sold_at
+      FROM items i
+      WHERE i.id = ?
+      FOR UPDATE
+    `,
+    [id]
+  );
+
+  return rows[0] || null;
+};
+
+
+export const markAsSoldWithConnection = async (
+  connection,
+  id,
+  soldAt
+) => {
+  const [result] = await connection.query(
+    `
+      UPDATE items
+      SET
+        status = 'sold',
+        is_in_store = 0,
+        is_online_visible = 0,
+        sold_at = ?
+      WHERE id = ?
+    `,
+    [soldAt, id]
+  );
+
+  return result.affectedRows;
+};

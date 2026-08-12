@@ -4,6 +4,7 @@ export const findAll = async () => {
   const [rows] = await pool.query(`
     SELECT
       s.id,
+      s.transaction_id,
       s.item_id,
       s.owner_customer_id,
       s.sale_date,
@@ -16,6 +17,11 @@ export const findAll = async () => {
       s.created_at,
       s.updated_at,
       s.buyer_customer_id,
+      s.buyer_customer_id,
+      s.buyer_credit_used,
+      s.buyer_cash_paid,
+      s.cash_difference_confirmed,
+      i.title,
       i.title,
       i.brand,
       i.category,
@@ -35,6 +41,7 @@ export const findById = async (id) => {
   const [rows] = await pool.query(`
     SELECT
       s.id,
+      s.transaction_id,
       s.item_id,
       s.owner_customer_id,
       s.sale_date,
@@ -47,6 +54,11 @@ export const findById = async (id) => {
       s.created_at,
       s.updated_at,
       s.buyer_customer_id,
+      s.buyer_customer_id,
+      s.buyer_credit_used,
+      s.buyer_cash_paid,
+      s.cash_difference_confirmed,
+      i.title,
       i.title,
       i.brand,
       i.category,
@@ -73,29 +85,89 @@ export const findByItemId = async (itemId) => {
 };
 
 export const insert = async (data) => {
-  const [result] = await pool.query(`
-    INSERT INTO sales (
-      item_id,
-      owner_customer_id,
-      sale_price,
-      owner_amount,
-      shop_amount,
-      sale_type,
-      payment_method,
-      notes,
-      buyer_customer_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `, [
-    data.item_id,
-    data.owner_customer_id,
-    data.sale_price,
-    data.owner_amount,
-    data.shop_amount,
-    data.sale_type,
-    data.payment_method,
-    data.notes || null,
-    data.buyer_customer_id,
-  ]);
+  const [result] = await pool.query(
+    `
+      INSERT INTO sales (
+        transaction_id,
+        item_id,
+        owner_customer_id,
+        sale_price,
+        owner_amount,
+        shop_amount,
+        sale_type,
+        payment_method,
+        notes,
+        buyer_customer_id,
+        buyer_credit_used,
+        buyer_cash_paid,
+        cash_difference_confirmed
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    [
+      data.transaction_id || null,
+      data.item_id,
+      data.owner_customer_id,
+      data.sale_price,
+      data.owner_amount,
+      data.shop_amount,
+      data.sale_type,
+      data.payment_method,
+      data.notes || null,
+      data.buyer_customer_id,
+
+      /*
+       * NULL sorgt dafür, dass alte Einzelverkäufe bei der
+       * Guthabenberechnung weiterhin den Verkaufspreis verwenden.
+       */
+      data.buyer_credit_used ?? null,
+      data.buyer_cash_paid ?? 0,
+      Number(data.cash_difference_confirmed ?? 0),
+    ]
+  );
+
+  return result.insertId;
+};
+
+export const insertWithConnection = async (
+  connection,
+  data
+) => {
+  const [result] = await connection.query(
+    `
+      INSERT INTO sales (
+        transaction_id,
+        item_id,
+        owner_customer_id,
+        sale_price,
+        owner_amount,
+        shop_amount,
+        sale_type,
+        payment_method,
+        notes,
+        buyer_customer_id,
+        buyer_credit_used,
+        buyer_cash_paid,
+        cash_difference_confirmed
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    [
+      data.transaction_id,
+      data.item_id,
+      data.owner_customer_id,
+      data.sale_price,
+      data.owner_amount,
+      data.shop_amount,
+      data.sale_type,
+      data.payment_method,
+      data.notes || null,
+      data.buyer_customer_id,
+      data.buyer_credit_used,
+      data.buyer_cash_paid ?? 0,
+      Number(data.cash_difference_confirmed ?? 0),
+    ]
+  );
 
   return result.insertId;
 };

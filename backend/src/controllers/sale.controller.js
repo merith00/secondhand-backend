@@ -10,3 +10,9 @@ export const createSale = asyncHandler(async (req, res) => {
   const newSale = await saleService.createSale(req.body);
   res.status(201).json(newSale);
 });
+
+export const createBatchSale = asyncHandler(async (req, res) => {
+  const result = await saleService.createBatchSale(req.body);
+
+  res.status(201).json(result);
+});

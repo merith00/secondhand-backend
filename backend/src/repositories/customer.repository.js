@@ -147,7 +147,14 @@ LEFT JOIN (
     SELECT
         buyer_customer_id,
         COUNT(*) AS bought_items_count,
-        SUM(sale_price) AS total_credit_spent
+
+        SUM(
+            COALESCE(
+                buyer_credit_used,
+                sale_price
+            )
+        ) AS total_credit_spent
+
     FROM sales
     GROUP BY buyer_customer_id
 ) buyer_stats
@@ -180,4 +187,77 @@ ORDER BY c.last_name ASC, c.first_name ASC;
   `);
 
   return rows;
+};
+
+
+export const findCreditBalanceWithConnection = async (
+  connection,
+  customerId
+) => {
+  /*
+   * Käufer sperren, bis der komplette Verkauf abgeschlossen ist.
+   * Zwei gleichzeitige Verkäufe können dadurch nicht dasselbe
+   * Guthaben verwenden.
+   */
+  const [customerRows] = await connection.query(
+    `
+      SELECT id
+      FROM customers
+      WHERE id = ?
+      FOR UPDATE
+    `,
+    [customerId]
+  );
+
+  if (customerRows.length === 0) {
+    return null;
+  }
+
+  const [rows] = await connection.query(
+    `
+      SELECT
+        GREATEST(
+          0,
+          COALESCE(earned.total_credit_earned, 0)
+          -
+          COALESCE(spent.total_credit_spent, 0)
+        ) AS credit_balance
+
+      FROM customers c
+
+      LEFT JOIN (
+        SELECT
+          owner_customer_id,
+          SUM(owner_amount) AS total_credit_earned
+        FROM sales
+        WHERE owner_customer_id = ?
+        GROUP BY owner_customer_id
+      ) earned
+        ON earned.owner_customer_id = c.id
+
+      LEFT JOIN (
+        SELECT
+          buyer_customer_id,
+          SUM(
+            COALESCE(
+              buyer_credit_used,
+              sale_price
+            )
+          ) AS total_credit_spent
+        FROM sales
+        WHERE buyer_customer_id = ?
+        GROUP BY buyer_customer_id
+      ) spent
+        ON spent.buyer_customer_id = c.id
+
+      WHERE c.id = ?
+    `,
+    [
+      customerId,
+      customerId,
+      customerId,
+    ]
+  );
+
+  return Number(rows[0]?.credit_balance ?? 0);
 };
