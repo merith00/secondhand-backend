@@ -210,3 +210,9 @@ ADD COLUMN buyer_cash_paid DECIMAL(10, 2) NOT NULL DEFAULT 0
 AFTER buyer_credit_used,
 ADD COLUMN cash_difference_confirmed TINYINT(1) NOT NULL DEFAULT 0
 AFTER buyer_cash_paid;
+
+
+ALTER TABLE sales
+MODIFY COLUMN payment_method
+ENUM('cash', 'bank_transfer', 'paypal')
+NOT NULL DEFAULT 'cash';

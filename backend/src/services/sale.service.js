@@ -498,6 +498,7 @@ const validateBatchSaleInput = (data) => {
   const allowedPaymentMethods = [
     'cash',
     'bank_transfer',
+    'paypal',
   ];
 
   if (
