@@ -53,11 +53,15 @@ export const updateItem = async (id, data) => {
     await itemRepository.update(id, data);
     await updateCustomerStatus(
         Number(data.owner_customer_id ?? existingItem.owner_customer_id)
-    ); 
+    );
 
-    await updateCustomerStatus(Number(data.buyer_customer_id));
+    console.log(data.buyer_customer_id +  " data.buyer_customer_id")
 
-    
+    if (data.buyer_customer_id != undefined) {
+        await updateCustomerStatus(Number(data.buyer_customer_id));
+    }
+
+
     return itemRepository.findById(id);
 };
 export const updateItemStatus = async (id, status) => {
