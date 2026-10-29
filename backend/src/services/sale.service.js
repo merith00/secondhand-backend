@@ -111,14 +111,16 @@ export const createBatchSale = async (data) => {
   );
 
   const sellerSharePercent = Number(
-    data.seller_share_percent ?? 40
+    data.seller_share_percent ?? 50
   );
 
   const shopSharePercent = Number(
-    data.shop_share_percent ?? 60
+    data.shop_share_percent ?? 50
   );
 
   if (
+    !Number.isFinite(sellerSharePercent) ||
+    !Number.isFinite(shopSharePercent) ||
     sellerSharePercent < 0 ||
     shopSharePercent < 0 ||
     sellerSharePercent > 100 ||
@@ -295,16 +297,10 @@ export const createBatchSale = async (data) => {
       const buyerCashPaid =
         itemCashPaidCents / 100;
 
-      const grossPrice = saleItem.sale_price;
-      const netPrice = grossPrice / 1.19;
-      const vatAmount = grossPrice - netPrice;
-
-      const ownerAmount =
-        (grossPrice * sellerSharePercent) / 100 -
-        vatAmount;
-
-      const shopAmount =
-        (grossPrice * shopSharePercent) / 100;
+      const grossPrice = salePriceCents / 100;
+      // Remove only the VAT contained in the seller's share.
+      const ownerAmount = Math.round(salePriceCents * sellerSharePercent / 100 / 1.19) / 100;
+      const shopAmount = Math.round(salePriceCents * shopSharePercent / 100) / 100;
 
       const saleId =
         await saleRepository
