@@ -1,3 +1,4 @@
+import { serveItemImage } from './middleware/itemImage.middleware.js';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -34,6 +35,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/uploads/items/:filename', serveItemImage);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.get('/health', (req, res) => {

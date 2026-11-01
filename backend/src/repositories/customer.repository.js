@@ -61,7 +61,7 @@ export const insert = async (data) => {
  `, [
     data.customer_number || '',
     data.first_name,
-    data.last_name,
+    data.last_name ?? '',
     data.street || null,
     data.house_number || null,
     data.postal_code || null,

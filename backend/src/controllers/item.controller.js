@@ -1,8 +1,9 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import * as itemService from '../services/item.service.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs/promises';
+import { prepareUpload, removeImage } from '../utils/imageStorage.js';
+
+
 import { pool } from '../config/db.js';
 
 export const getItems = asyncHandler(async (req, res) => {
@@ -28,82 +29,52 @@ export const updateItemStatus = asyncHandler(async (req, res) => {
     res.json(updatedItem);
 });
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
 
 export async function uploadItemImage(req, res, next) {
+  let optimized;
+  let committed = false;
   try {
     const itemId = req.params.id;
-
-    if (!req.file) {
-      return res.status(400).json({ message: 'Kein Bild hochgeladen' });
-    }
-
+    if (!req.file) return res.status(400).json({ message: 'Kein Bild hochgeladen' });
     const [rows] = await pool.query('SELECT image_url FROM items WHERE id = ?', [itemId]);
-
-    if (!rows.length) {
-      return res.status(404).json({ message: 'Artikel nicht gefunden' });
+    if (!rows.length) return res.status(404).json({ message: 'Artikel nicht gefunden' });
+    try {
+      optimized = await prepareUpload(req.file.path);
+    } catch (cause) {
+      if (cause.code) throw cause;
+      return res.status(400).json({ message: 'Bild konnte nicht verarbeitet werden. Bitte eine gültige JPG-, PNG- oder WebP-Datei verwenden.' });
     }
-
-    const oldImageUrl = rows[0].image_url;
-    const imageUrl = `/uploads/items/${req.file.filename}`;
-
-    await pool.query('UPDATE items SET image_url = ? WHERE id = ?', [imageUrl, itemId]);
-
-    if (oldImageUrl) {
-      const oldFilePath = path.join(__dirname, '../../', oldImageUrl);
-      fs.unlink(oldFilePath, () => {});
+    const [result] = await pool.query('UPDATE items SET image_url = ? WHERE id = ?', [optimized.url, itemId]);
+    if (!result.affectedRows) return res.status(404).json({ message: 'Artikel nicht gefunden' });
+    committed = true;
+    if (rows[0].image_url) {
+      try {
+        const [references] = await pool.query('SELECT id FROM items WHERE image_url = ? LIMIT 1', [rows[0].image_url]);
+        if (!references.length) await removeImage(rows[0].image_url);
+      } catch (error) { console.error('Altes Artikelbild konnte nicht entfernt werden:', error); }
     }
-
-    return res.json({
-      message: 'Bild erfolgreich hochgeladen',
-      image_url: imageUrl,
-    });
-  } catch (err) {
-    console.error('Upload Fehler:', err);
-
-    // 👉 Multer spezifische Fehler
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({
-        message: 'Bild ist zu groß (max. 10 MB)',
-      });
-    }
-
-    if (err.message === 'Nur JPG, PNG oder WebP erlaubt') {
-      return res.status(400).json({
-        message: err.message,
-      });
-    }
-
-    res.status(500).json({
-      message: 'Fehler beim Hochladen des Bildes',
-    });
-    
-    next(err);
+    return res.json({ message: 'Bild erfolgreich hochgeladen', image_url: optimized.url });
+  } catch (error) {
+    next(error);
+  } finally {
+    if (req.file) await fs.rm(req.file.path, { force: true }).catch(() => {});
+    if (optimized && !committed) await removeImage(optimized.url).catch(() => {});
   }
 }
 
 export async function deleteItemImage(req, res, next) {
   try {
     const itemId = req.params.id;
-
     const [rows] = await pool.query('SELECT image_url FROM items WHERE id = ?', [itemId]);
-
-    if (!rows.length) {
-      return res.status(404).json({ message: 'Artikel nicht gefunden' });
-    }
-
-    const imageUrl = rows[0].image_url;
-
+    if (!rows.length) return res.status(404).json({ message: 'Artikel nicht gefunden' });
     await pool.query('UPDATE items SET image_url = NULL WHERE id = ?', [itemId]);
-
-    if (imageUrl) {
-      const filePath = path.join(__dirname, '../../', imageUrl);
-      fs.unlink(filePath, () => {});
+    if (rows[0].image_url) {
+      try {
+        const [references] = await pool.query('SELECT id FROM items WHERE image_url = ? LIMIT 1', [rows[0].image_url]);
+        if (!references.length) await removeImage(rows[0].image_url);
+      } catch (error) { console.error('Artikelbild konnte nicht entfernt werden:', error); }
     }
-
     return res.json({ message: 'Bild gelöscht' });
-  } catch (err) {
-    next(err);
-  }
+  } catch (error) { next(error); }
 }

@@ -25,6 +25,7 @@ export const createCustomer = async (data) => {
         error.statusCode = 409;
         throw error;
         }
+        throw error;
     }
 };
 export const updateCustomer = async (id, data) => {
@@ -42,8 +43,8 @@ export const updateCustomer = async (id, data) => {
     return customerRepository.findById(id);
 };
 const validateCustomerInput = (data) => {
-    if (!data.first_name || !data.last_name) {
-        const error = new Error('Vorname und Nachname sind Pflichtfelder');
+    if (typeof data.first_name !== 'string' || !data.first_name.trim()) {
+        const error = new Error('Vorname ist ein Pflichtfeld');
         error.statusCode = 400;
         throw error;
     }
